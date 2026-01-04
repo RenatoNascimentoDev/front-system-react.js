@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import {
   BarChart3,
   Folder,
   FolderPlus,
   Home,
   LogOut,
+  Menu,
   User,
   Wand2,
 } from 'lucide-react'
@@ -11,6 +13,7 @@ import { useLocation, NavLink, useNavigate } from 'react-router-dom'
 import { clearToken, getToken } from '@/lib/auth'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import { useCurrentUser } from '@/http/use-current-user'
 
 const navLinks = [
   { to: '/', label: 'Início', icon: Home },
@@ -67,15 +70,29 @@ function Breadcrumbs() {
   )
 }
 
-function SidebarNav() {
+type SidebarNavProps = {
+  onNavigate?: () => void
+}
+
+function SidebarNav({ onNavigate }: SidebarNavProps) {
   const navigate = useNavigate()
+  const { data } = useCurrentUser()
 
   function handleLogout() {
     clearToken()
     navigate('/login')
   }
 
-  const userInitials = 'RN'
+  const name = data?.user.name ?? 'Usuário'
+  const email = data?.user.email ?? '—'
+  const avatar = data?.user.avatarUrl ?? ''
+  const userInitials = name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase() || 'US'
 
   return (
     <aside className="flex h-screen w-64 flex-col gap-4 border-r bg-card px-4 py-5 shadow-sm">
@@ -109,6 +126,7 @@ function SidebarNav() {
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )
               }
+              onClick={onNavigate}
             >
               <Icon className="size-4" />
               <span>{link.label}</span>
@@ -120,12 +138,12 @@ function SidebarNav() {
       <div className="mt-auto flex flex-col gap-3">
         <div className="flex items-center gap-3 rounded-lg border bg-muted/30 px-3 py-3">
           <Avatar className="border border-primary/20">
-            <AvatarImage alt="Avatar" src="" />
-            <AvatarFallback>{userInitials}</AvatarFallback>
+            <AvatarImage alt="Avatar" src={avatar} />
+            {!avatar ? <AvatarFallback>{userInitials}</AvatarFallback> : null}
           </Avatar>
           <div className="flex flex-col">
-            <span className="font-medium leading-tight">Renato Nascimento</span>
-            <span className="text-muted-foreground text-xs">renato@example.com</span>
+            <span className="font-medium leading-tight">{name}</span>
+            <span className="text-muted-foreground text-xs">{email}</span>
           </div>
         </div>
         <button
@@ -142,13 +160,43 @@ function SidebarNav() {
 }
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  const closeSidebar = () => setIsSidebarOpen(false)
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev)
+
   return (
     <div className="flex min-h-screen bg-background text-foreground">
-      <SidebarNav />
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b px-6 py-4">
+      <div
+        className={cn(
+          'fixed inset-y-0 left-0 z-30 w-64 transition-transform duration-300 md:static md:translate-x-0',
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        )}
+      >
+        <SidebarNav onNavigate={closeSidebar} />
+      </div>
+
+      {isSidebarOpen ? (
+        <button
+          aria-label="Fechar menu"
+          className="fixed inset-0 z-20 bg-black/40 md:hidden"
+          onClick={closeSidebar}
+          type="button"
+        />
+      ) : null}
+
+      <div className="flex flex-1 flex-col md:pl-0">
+        <header className="flex items-center justify-between border-b px-4 py-3 md:px-6 md:py-4">
           <div className="flex items-center gap-3">
-            <BarChart3 className="size-5 text-muted-foreground" />
+            <button
+              aria-label="Abrir menu"
+              className="rounded-md border bg-card p-2 md:hidden"
+              onClick={toggleSidebar}
+              type="button"
+            >
+              <Menu className="size-5" />
+            </button>
+            <BarChart3 className="hidden size-5 text-muted-foreground md:block" />
             <Breadcrumbs />
           </div>
           {getToken() ? (
@@ -157,7 +205,9 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
             </span>
           ) : null}
         </header>
-        <main className="flex-1 overflow-y-auto px-6 py-6">{children}</main>
+        <main className="flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6">
+          {children}
+        </main>
       </div>
     </div>
   )

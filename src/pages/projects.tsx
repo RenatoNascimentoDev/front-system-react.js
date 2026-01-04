@@ -11,7 +11,7 @@ const mockProjects = [
 export function Projects() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Projetos</h1>
           <p className="text-muted-foreground text-sm">
@@ -19,7 +19,7 @@ export function Projects() {
           </p>
         </div>
         <Link to="/projects/new">
-          <Button className="gap-2">
+          <Button className="w-full gap-2 md:w-auto">
             <Plus className="size-4" />
             Novo projeto
           </Button>
