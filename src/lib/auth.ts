@@ -17,7 +17,7 @@ export function clearToken() {
   localStorage.removeItem(KEY)
 }
 
-export function buildAuthHeader() {
+export function buildAuthHeader(): Record<string, string> {
   const token = getToken()
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
