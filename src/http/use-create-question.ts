@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { CreateQuestionRequest } from './types/create-question-request'
 import type { CreateQuestionResponse } from './types/create-question-response'
 import type { GetRoomQuestionsResponse } from './types/get-room-questions-response'
+import { buildAuthHeader } from '@/lib/auth'
 
 export function UseCreateQuestion(roomId: string) {
   const queryClient = useQueryClient()
@@ -14,6 +15,7 @@ export function UseCreateQuestion(roomId: string) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...buildAuthHeader(),
           },
           body: JSON.stringify(data),
         }

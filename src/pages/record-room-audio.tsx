@@ -2,6 +2,7 @@
 import { useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { buildAuthHeader } from '@/lib/auth'
 
 const isRecodingSupported =
   !!navigator.mediaDevices &&
@@ -37,6 +38,9 @@ export function RecordRoomAudio() {
 
     const response = await fetch(`http://localhost:3333/rooms/${params.roomId}/audio`, {
       method: 'POST',
+      headers: {
+        ...buildAuthHeader(),
+      },
       body: formData,
     })
 
